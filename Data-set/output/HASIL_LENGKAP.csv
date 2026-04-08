@@ -1,0 +1,11 @@
+Pendekatan,Skenario,Accuracy,Precision,Recall,F1-Score,AUC-ROC
+Centralized,Logistic Regression,0.8947,0.4532,0.8947,0.6017,0.9687
+Centralized,Random Forest,0.9398,0.6123,0.8786,0.7216,0.98
+Centralized,KNN,0.9069,0.4864,0.8414,0.6164,0.9323
+Centralized,Gradient Boosting,0.917,0.5183,0.9318,0.6661,0.9829
+FL,FL IID 5K,0.8947,0.4532,0.8947,0.6017,0.9687
+FL,FL Non-IID 5K,0.896,0.4566,0.8934,0.6044,0.9687
+FL,FL IID 10K,0.8946,0.4529,0.8947,0.6014,0.9687
+FL+Blockchain,Normal,0.8947,0.4532,0.8947,0.6017,0.9687
+FL+Blockchain,1 Jahat,0.8945,0.4527,0.8947,0.6012,0.9687
+FL+Blockchain,2 Jahat,0.8943,0.4519,0.891,0.5997,0.9687
