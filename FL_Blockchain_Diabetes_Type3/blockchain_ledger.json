@@ -1,0 +1,691 @@
+[
+  {
+    "index": 0,
+    "timestamp": "2026-04-09T22:07:31.772667",
+    "hash": "00ca23b8c0aaaa7f7e626f8ebe94100f222c3b8ba6a6e3ce19fab4a927c44e13",
+    "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+    "data": {
+      "message": "Genesis Block"
+    }
+  },
+  {
+    "index": 1,
+    "timestamp": "2026-04-09T22:07:32.067670",
+    "hash": "0089d4b5d3542e81b896c251e07c2bdc26e34d66997afdda6c5776476de48830",
+    "prev_hash": "00ca23b8c0aaaa7f7e626f8ebe94100f222c3b8ba6a6e3ce19fab4a927c44e13",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:32.067665",
+          "data": {
+            "round": 1,
+            "n_clients": 5,
+            "global_hash": "46a810bad6f0daeb15afe9a06500587a98784ac4d6d08f7fc4b30c21710b6090",
+            "metrics": {
+              "accuracy": 0.8473922902494331,
+              "precision": 0.24242424242424243,
+              "recall": 0.9004329004329005,
+              "f1": 0.3820018365472911,
+              "auc_roc": 0.9472196065878765
+            },
+            "client_hashes": [
+              "7af3b1d9b0c34adc5c118a0afc62a8f987854d92a4a25efdc933d5d2018ed04e",
+              "e4821122d11e4b053007a9b69c0d73dd08a7cfec7d9f436cf66165153296caa9",
+              "2cfdc7d27149a7ecc621042eb260b60408893f2249dc7fc954d00354f477396b",
+              "35b0763fa7d4d13cb182cfeaee6ca1c05c47da35c634668acf892c6831656d15",
+              "3e7d0152ea5ec4c052ab8f7b6251ff08b14e60d8adfe256b2b7d5602b0672075"
+            ],
+            "timestamp": "2026-04-09T22:07:32.067649"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 2,
+    "timestamp": "2026-04-09T22:07:32.274552",
+    "hash": "007e5447e2a0fb696c6471321c9a738983a0f41d1202612554c540b02b2f87cf",
+    "prev_hash": "0089d4b5d3542e81b896c251e07c2bdc26e34d66997afdda6c5776476de48830",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:32.274547",
+          "data": {
+            "round": 2,
+            "n_clients": 5,
+            "global_hash": "6062ba307c4eeecccdc33123cc4b7ca18d3af2bd9be5dd3267f3fba3973097f3",
+            "metrics": {
+              "accuracy": 0.8438775510204082,
+              "precision": 0.23782234957020057,
+              "recall": 0.8982683982683982,
+              "f1": 0.3760761214318079,
+              "auc_roc": 0.94655689289573
+            },
+            "client_hashes": [
+              "b4cd547790de1d2dd97c0dad49e3cd123772486dfb4cb776eefb0f1ecc4dbc2b",
+              "7ba1ec3a7d20c9dfb18bd8a1c1fdda45fbf4129e7720a85a8c26327bf439b867",
+              "45e259b8d62184f5095465c5eeee7581d7da6a6d8d1c0d064425afff98454b34",
+              "0e1b56ddc310eebe7b94ea92ba54c942f0b3ef7f853b5e3cd663909e101199bd",
+              "f19672236b47a2cc63bf99cffcba5550077b402d022b529d4451054696fe5275"
+            ],
+            "timestamp": "2026-04-09T22:07:32.274534"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 3,
+    "timestamp": "2026-04-09T22:07:32.478850",
+    "hash": "009e0650605632594bdb930adf56a8984645d8e3e5aa6a0be82ec3df5bf8501d",
+    "prev_hash": "007e5447e2a0fb696c6471321c9a738983a0f41d1202612554c540b02b2f87cf",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:32.478847",
+          "data": {
+            "round": 3,
+            "n_clients": 5,
+            "global_hash": "a16f9991e33df6e4166f26089bd90130b0f5b4bbcfca9f328ccb2815e6a2e46c",
+            "metrics": {
+              "accuracy": 0.8481859410430839,
+              "precision": 0.24251321197886083,
+              "recall": 0.8939393939393939,
+              "f1": 0.3815242494226328,
+              "auc_roc": 0.9465113135249532
+            },
+            "client_hashes": [
+              "d5a56750111bafb27eb5901f7c67111e6f9d14e2ec16738408a60ec9fb69254b",
+              "8868a9097ac9f6a7dc297aba26b68bc3588e1c1bc8b15600f689bf3d3b4dab3c",
+              "1c38db732bafbbf3163d3e7d0efc760f3607b978721d5d4b719794ec8622a15d",
+              "9f050045391d0721d9ed7606af3df9f683fe563b140b48778fbe69e26420afcf",
+              "1e827833fa29e9cb96a6676d20a2f42d3ed5a7df0cd09e9d43b5c744a3eff20e"
+            ],
+            "timestamp": "2026-04-09T22:07:32.478836"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 4,
+    "timestamp": "2026-04-09T22:07:32.757361",
+    "hash": "008922d97c5a35d3d4ec7890fc3c1017208a874aa5a5b04a9849a10b4e81db5b",
+    "prev_hash": "009e0650605632594bdb930adf56a8984645d8e3e5aa6a0be82ec3df5bf8501d",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:32.757356",
+          "data": {
+            "round": 4,
+            "n_clients": 5,
+            "global_hash": "274e99e18deea0f8143055580b51dcb17f381e60a7bf4876051c723a1a81df36",
+            "metrics": {
+              "accuracy": 0.8562358276643991,
+              "precision": 0.25123456790123455,
+              "recall": 0.8809523809523809,
+              "f1": 0.3909702209414025,
+              "auc_roc": 0.9472535321422615
+            },
+            "client_hashes": [
+              "57bd7aebdc824ab0660703563814575c6e742e38f89eabe8d82a7d49f9e3fb44",
+              "830658e492519bae65fced7ff52f9b963a3cb2ec2d3c7f547e38312a0e7db193",
+              "3bc24d1f2f9ec21cb7a852ac1806330fb0f3e9cf544608783dc702610c525b9f",
+              "658d33c4c0759b55eb51f2c09522db2e9cd163258725bc52b2ea43115cbcc25a",
+              "84307676fabd4a1c20aa890c1c81f6b898e1a362f1d22665de1f5ecd42b4a4e9"
+            ],
+            "timestamp": "2026-04-09T22:07:32.757334"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 5,
+    "timestamp": "2026-04-09T22:07:32.984328",
+    "hash": "007373350f0d532088f63f43cbad33747eb4beed34f28bbb35c0e3b94c5e6457",
+    "prev_hash": "008922d97c5a35d3d4ec7890fc3c1017208a874aa5a5b04a9849a10b4e81db5b",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:32.984325",
+          "data": {
+            "round": 5,
+            "n_clients": 5,
+            "global_hash": "83f02ec93bdd652a38458d21a6cfeb549effc9f6349198240f666c9dad0ea023",
+            "metrics": {
+              "accuracy": 0.8425170068027211,
+              "precision": 0.23649801023308697,
+              "recall": 0.9004329004329005,
+              "f1": 0.3746060333183251,
+              "auc_roc": 0.9468290742519027
+            },
+            "client_hashes": [
+              "ed8797f1aa8e293300ee17e57122ee7d8ed7588a79de1e0a18fa06c8bea58f5f",
+              "4bb6b272e99c6afe3520a6d7826818b9976a9221fe2d1b03d270dfc608e3551e",
+              "aebdb22d13e0aa634ac4b359290a79c271d7a717d1a7528005533748a216410e",
+              "9c901aca7b5284cff96eaeb0ce5fade04d1eba7c6fd6357123b16e84ee9f2a23",
+              "53081f0af439c53e63e3af5c904aab4ff92eb9d7d9f4e234b7902baba174f555"
+            ],
+            "timestamp": "2026-04-09T22:07:32.984314"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 6,
+    "timestamp": "2026-04-09T22:07:33.197190",
+    "hash": "003aff4b7c807902701b82befc2fe04bf1fe83f3d74b682aaa1ef3367e40f24b",
+    "prev_hash": "007373350f0d532088f63f43cbad33747eb4beed34f28bbb35c0e3b94c5e6457",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:33.197184",
+          "data": {
+            "round": 6,
+            "n_clients": 5,
+            "global_hash": "5dbede392c85c9c7e8d3e334d4b212098154797103e4da9041b4fa2dbe17ea1c",
+            "metrics": {
+              "accuracy": 0.8546485260770975,
+              "precision": 0.24938875305623473,
+              "recall": 0.8831168831168831,
+              "f1": 0.38894184938036225,
+              "auc_roc": 0.9468979612554631
+            },
+            "client_hashes": [
+              "7a58cb03ee556e951fb377e4c6b52d7752f3b0aa9990ed37b7e165d05bb380bc",
+              "78b6fc86e064483545f014407bf74a7af2fcd85fed39f9356966206d9b7e3324",
+              "5f6b4b534ea051e4782fc4a50f95ae188ec9aa3aed9de1e488bdf80c8f90002d",
+              "adf89d13582c86ee33a9b5064d05b08bbec6b4afb08b7ba927270bf915468483",
+              "9c61c3d8240cf486214bc02c44e87616b0665ca18a1174a4fe1357481d56f7bb"
+            ],
+            "timestamp": "2026-04-09T22:07:33.197168"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 7,
+    "timestamp": "2026-04-09T22:07:33.461395",
+    "hash": "00a5b718acb97560a36f8c8993205797c961d69f5153726cf274f3c0d0b465ca",
+    "prev_hash": "003aff4b7c807902701b82befc2fe04bf1fe83f3d74b682aaa1ef3367e40f24b",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:33.461391",
+          "data": {
+            "round": 7,
+            "n_clients": 5,
+            "global_hash": "e1ab74df26d52532627674e6cba44043c0036d0cd8c2d6a8a6cc02ab3a359b7b",
+            "metrics": {
+              "accuracy": 0.8561224489795919,
+              "precision": 0.2516923076923077,
+              "recall": 0.8852813852813853,
+              "f1": 0.3919501677048395,
+              "auc_roc": 0.946955712390027
+            },
+            "client_hashes": [
+              "d64f59bc22584e26d41a46c9db7af280f4d472fa3571b93fe88ac1ff48ac8d19",
+              "428fac2575dff2ca7c5a79a24659ab207e38be7a6b0b73800bb7e602dae7444d",
+              "37fa7b09d3eecd4a4a3566f03cddd9f7eb0b13ac95deb33283f2607575d47182",
+              "8d0a67d9aeae9a00b3841373a74d618952773e8a8b14b08c6102ab99a0783584",
+              "50184bb94bb10b371a3eddd5666e17ba2232c85126adc69a4cc3e7a23475d2be"
+            ],
+            "timestamp": "2026-04-09T22:07:33.461373"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 8,
+    "timestamp": "2026-04-09T22:07:33.689384",
+    "hash": "00d4cdff18eb7eca8d8738616fffad36c246b49896e794cf4c791c3efd16185a",
+    "prev_hash": "00a5b718acb97560a36f8c8993205797c961d69f5153726cf274f3c0d0b465ca",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:33.689380",
+          "data": {
+            "round": 8,
+            "n_clients": 5,
+            "global_hash": "a9deb48ca19798c513db9fc31f6ec4c4358a559ffbe036eb160eccbaac864b14",
+            "metrics": {
+              "accuracy": 0.8532879818594105,
+              "precision": 0.24757281553398058,
+              "recall": 0.8831168831168831,
+              "f1": 0.3867298578199052,
+              "auc_roc": 0.946857043411243
+            },
+            "client_hashes": [
+              "af37de2fd1f543e6d18cfedd2a3ce6cc5a831e6898e56536d6084284640d7ce5",
+              "7067eedb2750d52768012230802dbe02c2e6f4f10a4529e6ca3462ee42f5d9e4",
+              "3b528faa32b4460e7152df6ec2c401d4763e6d9c290d42feaa48f3ac0a39b581",
+              "b112ce3dcbc458c45a6f2825f9f0db95a338e20ff8ceabae08c7f37412cdf62e",
+              "1875990495bb0e81ba10964132022c85700318d924713850b3f91f4ae38a99b2"
+            ],
+            "timestamp": "2026-04-09T22:07:33.689367"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 9,
+    "timestamp": "2026-04-09T22:07:33.894678",
+    "hash": "00a5f7b6b752ba8a8c71011e722aaddc94b84599226be836594e06b70c0f9467",
+    "prev_hash": "00d4cdff18eb7eca8d8738616fffad36c246b49896e794cf4c791c3efd16185a",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:33.894675",
+          "data": {
+            "round": 9,
+            "n_clients": 5,
+            "global_hash": "7b0516903f5d4865c2413ef3a5917e9b873b730ca206fbdda0db746413e03a9b",
+            "metrics": {
+              "accuracy": 0.8536281179138322,
+              "precision": 0.2471018913971934,
+              "recall": 0.8766233766233766,
+              "f1": 0.3855306996668253,
+              "auc_roc": 0.9467096873773113
+            },
+            "client_hashes": [
+              "31862f32a7a63a883374e8570f451e2d191e8d6e77eae41b9b2c316ccb44f1d3",
+              "46c720b3fb63ad9c712095ef0d750033ef3ffc7a5fcaf8697f58a5b2614e322a",
+              "0eb504616156a6b77fccd4ad69a78ff021466eac3b167ae8d72dba1518992e45",
+              "62e8ddfec2741d8a5a7d097ac0a57ce275502179fe377cbde484c75cec095274",
+              "a5a9d52e97b9dfbfa30ccb653ce732a08126a42d13612fe079f857445f5b4c0f"
+            ],
+            "timestamp": "2026-04-09T22:07:33.894663"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 10,
+    "timestamp": "2026-04-09T22:07:34.101633",
+    "hash": "000cd212ff776984570d3816d6de450eea5d2dfcdb411d91591429eafffe8f39",
+    "prev_hash": "00a5f7b6b752ba8a8c71011e722aaddc94b84599226be836594e06b70c0f9467",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:34.101630",
+          "data": {
+            "round": 10,
+            "n_clients": 5,
+            "global_hash": "863b041b56c738cf778487e2fedc0092b3cf9c9fbc75f13b59fbcd7081b5bb29",
+            "metrics": {
+              "accuracy": 0.8527210884353742,
+              "precision": 0.24804334738109574,
+              "recall": 0.8917748917748918,
+              "f1": 0.3881300047103156,
+              "auc_roc": 0.9469256714411058
+            },
+            "client_hashes": [
+              "e3edb50ae524e69116f94636b39e985b7913f219ea5c0572a32786b2b883f036",
+              "2fedcafadee61fa70cd7175d204a73862c90d4977f9596eff130292ed3a385df",
+              "5b49994286c262d8fb985024bd750188316c1ec85cea6c00b448f3737f458f71",
+              "1659e9537bb387a576a8e8bcf9d44308612368725062e9d8ba3e2c28d864b5d6",
+              "0ab4552f803c577d19243a227c0f259580f883b51323fb2ac58e8e7a45630f91"
+            ],
+            "timestamp": "2026-04-09T22:07:34.101620"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 11,
+    "timestamp": "2026-04-09T22:07:34.367799",
+    "hash": "00413212b65cb890f2c7304e02d46d3c251df492db9665595dbc5c5b05de0e28",
+    "prev_hash": "000cd212ff776984570d3816d6de450eea5d2dfcdb411d91591429eafffe8f39",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:34.367795",
+          "data": {
+            "round": 11,
+            "n_clients": 5,
+            "global_hash": "e0c184f895c44525bf8edd55ca58c124923f2edb19337659e85cf34790f37046",
+            "metrics": {
+              "accuracy": 0.8492063492063492,
+              "precision": 0.24440518256772673,
+              "recall": 0.8982683982683982,
+              "f1": 0.38425925925925924,
+              "auc_roc": 0.9472434321680553
+            },
+            "client_hashes": [
+              "f50099fdaf9aab261488a198b24cf10a63d2faf52d4dcdcb4bb9293ea6ba46a8",
+              "2919aaeb3e92684f0224150b6d8607493960c3c21c6b86bcb3cf8bf8d94f7205",
+              "e540ddb3e79c492a5af36253d1ca94c0786a9d1da369d18416f2e8612ddcaefb",
+              "7aff157b4091199aee52bf220688b68ebcf5d71f2eb0e8bd2ded5a7807681b51",
+              "946acf24377d60fdea16af43fac21dc71e4b81dc7d890aafed07aa5f71e810f7"
+            ],
+            "timestamp": "2026-04-09T22:07:34.367781"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 12,
+    "timestamp": "2026-04-09T22:07:34.570110",
+    "hash": "0024d412ada89edac9888011e809fb22361dc7bf2360f0609185e5667ebbd329",
+    "prev_hash": "00413212b65cb890f2c7304e02d46d3c251df492db9665595dbc5c5b05de0e28",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:34.570106",
+          "data": {
+            "round": 12,
+            "n_clients": 5,
+            "global_hash": "3441ec13f195bf2c6a7102f34958ee19f789b5eb862df28827876eba66564425",
+            "metrics": {
+              "accuracy": 0.8481859410430839,
+              "precision": 0.24221046443268665,
+              "recall": 0.8917748917748918,
+              "f1": 0.38095238095238093,
+              "auc_roc": 0.9468143127511398
+            },
+            "client_hashes": [
+              "4ddb631fa152f3f89a18f458bf09e4d944f442ef43038180e090aa575091dc83",
+              "33f863f49af79398a79bc59f6449433177e818de20e90601b15df60d1fcc807d",
+              "670a3cc25e18b47ef665f3daf8daba0d3a1d897c4e2af8c8bc1e41d905118e6f",
+              "5ba3c69ce1551e5575a9a1760cc7b284e27320a307e885481480a9ce76aeb452",
+              "8c0730f724a44dc8d090bc71f253f24ea9f82e30b4cf2aee13bcdef98389c81d"
+            ],
+            "timestamp": "2026-04-09T22:07:34.570092"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 13,
+    "timestamp": "2026-04-09T22:07:34.780154",
+    "hash": "00913327a5d38288aa2fe157490ce886f281ee1cee325a6eefeb4ca3be967473",
+    "prev_hash": "0024d412ada89edac9888011e809fb22361dc7bf2360f0609185e5667ebbd329",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:34.780150",
+          "data": {
+            "round": 13,
+            "n_clients": 5,
+            "global_hash": "81959a3a93658d6df508830044c7780e096cc1e62a3729d8627cd38f2380a540",
+            "metrics": {
+              "accuracy": 0.8549886621315193,
+              "precision": 0.24892440073755379,
+              "recall": 0.8766233766233766,
+              "f1": 0.3877453326950694,
+              "auc_roc": 0.9467858256444044
+            },
+            "client_hashes": [
+              "1937daf3b1e434ddc764c31bffc81cf14c812ca55cd535ee3c32be490d2eac25",
+              "ec6e7f853df09eaeb59fe4b154473744475ea4b6e4ad616885f43f1e2f274fe2",
+              "4f71eeedc7c18ef5b7a4faad567f84da23093af2109b03d849f41f9f810689ad",
+              "ad1290767b4da540f39a8d5f13ef351ea15c3800a1f4a7a8abee2ec10226c850",
+              "8bf01e37431e19da3a84daadc580ba9ee3de05f78d4cf9165e04135bf7b32b2d"
+            ],
+            "timestamp": "2026-04-09T22:07:34.780140"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 14,
+    "timestamp": "2026-04-09T22:07:34.981357",
+    "hash": "0046f20b6bd74194b3d8448afe90412ee62d156a2b82e0800166f6185b8770f3",
+    "prev_hash": "00913327a5d38288aa2fe157490ce886f281ee1cee325a6eefeb4ca3be967473",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:34.981353",
+          "data": {
+            "round": 14,
+            "n_clients": 5,
+            "global_hash": "17f0f9c7efd140872318c705b62419209049a1228c537c8a8f905463fdabb082",
+            "metrics": {
+              "accuracy": 0.8543083900226758,
+              "precision": 0.24984802431610942,
+              "recall": 0.8896103896103896,
+              "f1": 0.3901281442809682,
+              "auc_roc": 0.9471913784548387
+            },
+            "client_hashes": [
+              "518b3b81e81958931a88213442ddddee65c2411ea72185dc437218038459f2a2",
+              "5a47d2f5b11c6546199eb27618c1bac815ef11b030440d013d8fe8b846ca2971",
+              "7b36e2e0907b0a9cb9a3f2abfbd74d73c3c993241afa9813315dd3527513eb7d",
+              "9b0145a670284f1316b0d1e3b3fa0decdbd662733b7be95ecbd632c4e44961bb",
+              "f073173daff8c9d7795b428806448390bfcb3bd267b4a31cf2031feb28a8361a"
+            ],
+            "timestamp": "2026-04-09T22:07:34.981343"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 15,
+    "timestamp": "2026-04-09T22:07:35.197098",
+    "hash": "00096fe95d528d6870bb35f999b05109b5298e03dfda3a2d7b367f53bfb11952",
+    "prev_hash": "0046f20b6bd74194b3d8448afe90412ee62d156a2b82e0800166f6185b8770f3",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:35.197094",
+          "data": {
+            "round": 15,
+            "n_clients": 5,
+            "global_hash": "654f8931d8e73c1d1b7ddcc9eba75b78a05a3faebfb54b8315666a3aeb8a42a0",
+            "metrics": {
+              "accuracy": 0.8538548752834467,
+              "precision": 0.24924196482716798,
+              "recall": 0.8896103896103896,
+              "f1": 0.3893889152060635,
+              "auc_roc": 0.9470069891821508
+            },
+            "client_hashes": [
+              "baa4891dbb4e4d49bc35b4831bec2d311cdff37eb26a065aa86f50d5ae357a93",
+              "fbc176dcb7546f73630114ccb7f5830ce813e2933abcc779e481cc625916e5d6",
+              "de7f6f9b88eb02bb7324b95443dd06999b34b76f502ea1a9acc64657db42fe6d",
+              "4ad8f116c2beab2cc7a1908119564611f303cbbb0bc6d3f9cc35f4c8de8784cb",
+              "db61788eba5bd1d876c4a4836927ae480dd6b658f9a96b027dbaf9b3874e2987"
+            ],
+            "timestamp": "2026-04-09T22:07:35.197078"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 16,
+    "timestamp": "2026-04-09T22:07:35.466308",
+    "hash": "00044f28d171b5c7c63784bb5db79e8ee1280920ee232953e064e428402b33c6",
+    "prev_hash": "00096fe95d528d6870bb35f999b05109b5298e03dfda3a2d7b367f53bfb11952",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:35.466304",
+          "data": {
+            "round": 16,
+            "n_clients": 5,
+            "global_hash": "c3a3bdc6f8b13f8e4d2dee55d895197dd2f4d4067f4742554f551d2dd6b59adb",
+            "metrics": {
+              "accuracy": 0.8520408163265306,
+              "precision": 0.24775583482944344,
+              "recall": 0.8961038961038961,
+              "f1": 0.3881856540084388,
+              "auc_roc": 0.9469264483621985
+            },
+            "client_hashes": [
+              "df0d839c02ec0dc9d85aa21d8c7ce9488ce5512f42c10e1a11bdbe1bd14b3bb0",
+              "9a00eb7dfa0d2236a0e82831e2f01e349c6aaeef4f9b0727e9d22b44b0e361d2",
+              "df8db94f419ea5b92121d92c92412e28f836bab1f8c3cd3f2e9e843da6e74a38",
+              "252968efacfe7c9af7b3ea3dcfe6992c2d87b7bf6ce776e00df24dfe5fe22133",
+              "7f7c66e107f9d73c61ca428bfd2f460865374f2f7bbf1c886692d34cf9b4e937"
+            ],
+            "timestamp": "2026-04-09T22:07:35.466289"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 17,
+    "timestamp": "2026-04-09T22:07:35.677010",
+    "hash": "002c06a5461eab16cb2a8f9becc924b116161dfebf09ed2877b5b92ff09b5abe",
+    "prev_hash": "00044f28d171b5c7c63784bb5db79e8ee1280920ee232953e064e428402b33c6",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:35.677006",
+          "data": {
+            "round": 17,
+            "n_clients": 5,
+            "global_hash": "42b8571f4b2505f7636cd92093ed2aa6610c8abf85ffab9b6ee4fc8d126316eb",
+            "metrics": {
+              "accuracy": 0.8527210884353742,
+              "precision": 0.24804334738109574,
+              "recall": 0.8917748917748918,
+              "f1": 0.3881300047103156,
+              "auc_roc": 0.9470688838958761
+            },
+            "client_hashes": [
+              "e25e68dc51d6c4a36682dd062a6d8fec4bd47e23ad8323d985cb9c4136184810",
+              "6d0dee351476221dac270e0e9834e9dfb40c0d0fade3946fbd65801c36c10762",
+              "f16c3694c909c3ea595968f7ce4b544c09b83a398aa846df352d08e69059f0bb",
+              "cbcfe0202a433a44eead8ee5ebf884d3c047d8ac35bcb31766dcd21461150a5f",
+              "27aa63655e774945d514b9434a4ddc1b95f6b2f888a8f228e407a5ea0cf1b720"
+            ],
+            "timestamp": "2026-04-09T22:07:35.676992"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 18,
+    "timestamp": "2026-04-09T22:07:35.880013",
+    "hash": "0062a22786f1b3e5fc243f32a9bfb9fa8745c1cfb3bce735f7bdaafae78ab7fe",
+    "prev_hash": "002c06a5461eab16cb2a8f9becc924b116161dfebf09ed2877b5b92ff09b5abe",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:35.880010",
+          "data": {
+            "round": 18,
+            "n_clients": 5,
+            "global_hash": "2f6e00c6b75802ea65a6af9be52a2aee00979ea66b2667ae7ba605b3a1c8116f",
+            "metrics": {
+              "accuracy": 0.8538548752834467,
+              "precision": 0.24924196482716798,
+              "recall": 0.8896103896103896,
+              "f1": 0.3893889152060635,
+              "auc_roc": 0.9470274481042609
+            },
+            "client_hashes": [
+              "7df97132db5be8cbc237739b73979f061fa8e4d48d1cf550e3d92d49c56bb4d0",
+              "7245e138e33d3a877c68b6917e47482d3673490b60efb6f04e796db31cacb54f",
+              "ef88ef792ac1cee17790c9ce157770bb2e7649e156cef7068113d98c7c6ac993",
+              "c11fb1dd5d81b23d829f3b708228ed7b0d8c2193306a3b8d259b4b4604e3e788",
+              "4d7ba2787fc2e39e88834dd7772a27b49dcb80798fc57e467ef0e8f86ee93f3f"
+            ],
+            "timestamp": "2026-04-09T22:07:35.879996"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 19,
+    "timestamp": "2026-04-09T22:07:36.093634",
+    "hash": "0035a537e87e37f1ad6982fb9b58040136cef2f524e7c61308a8eda77dfcf956",
+    "prev_hash": "0062a22786f1b3e5fc243f32a9bfb9fa8745c1cfb3bce735f7bdaafae78ab7fe",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:36.093630",
+          "data": {
+            "round": 19,
+            "n_clients": 5,
+            "global_hash": "dd9e87a6e50e9223cd015263268ad70238efeb584e983804a811bf9fcefef65d",
+            "metrics": {
+              "accuracy": 0.854421768707483,
+              "precision": 0.25,
+              "recall": 0.8896103896103896,
+              "f1": 0.3903133903133903,
+              "auc_roc": 0.9471180888984191
+            },
+            "client_hashes": [
+              "b852c7b8d1525278b334b39c2231af0b86f8437b59a5758b694c29b2ac7f7e0e",
+              "05ace70b567b77bc82e51e4e44815562dc46a089822f7dfd2173af2e65704e75",
+              "9f57df1a4140f71c1d156e70342b0649ab56fa55f33c2968e835ccda9a2a8aa0",
+              "60d128fdee8b69bdf5cef9227abee1113459a33ba1c55c1b57018690ae1dc34f",
+              "2d230ec63b5d9f56816af0beb6ebce78d92efd7607a127f6a2834e590201b207"
+            ],
+            "timestamp": "2026-04-09T22:07:36.093616"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  },
+  {
+    "index": 20,
+    "timestamp": "2026-04-09T22:07:36.298050",
+    "hash": "000ca9c830c47d84c592ef00e3c55b8dc3edec388c4a88e15eb47f49baa28b03",
+    "prev_hash": "0035a537e87e37f1ad6982fb9b58040136cef2f524e7c61308a8eda77dfcf956",
+    "data": {
+      "transactions": [
+        {
+          "timestamp": "2026-04-09T22:07:36.298047",
+          "data": {
+            "round": 20,
+            "n_clients": 5,
+            "global_hash": "ab04525219d964b9a7ba4115f17f38592cfe3e019fceb35447cf412dc7b7a325",
+            "metrics": {
+              "accuracy": 0.8386621315192744,
+              "precision": 0.23260990539788537,
+              "recall": 0.9047619047619048,
+              "f1": 0.3700752545374059,
+              "auc_roc": 0.9465796825811184
+            },
+            "client_hashes": [
+              "cd484a688b2bca9eb1e42d5f8ff0ad804ac7500fd0798db724355afa64535f96",
+              "464fd4c5e412ae03a49224aa925fa92f9cc68877ae3484f632bf66e9a5efbee0",
+              "cb8617ca752064eebb698f865909866b7ea50d469afc69412cd3ecdae4c95a87",
+              "794d49ee4e78f68a6bf1ff5bec6bc3e060e14fcc4c428f9b4a33f91d95cc7a84",
+              "c460df45152f78dde582b5b512f04f975457a817b34ee25934c9ed66f5d26cee"
+            ],
+            "timestamp": "2026-04-09T22:07:36.298035"
+          }
+        }
+      ],
+      "transaction_count": 1
+    }
+  }
+]
