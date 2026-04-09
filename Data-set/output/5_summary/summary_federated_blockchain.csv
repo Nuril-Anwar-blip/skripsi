@@ -1,0 +1,4 @@
+approach,scenario,accuracy,precision,recall,f1,auc,accepted_clients_last_round,rejected_clients_last_round,ledger_valid
+federated_blockchain,fl_bc_normal,0.881,0.4154,0.8573,0.5597,0.956,5.0,0.0,True
+federated_blockchain,fl_bc_1_malicious,0.8811,0.4157,0.8573,0.5599,0.956,4.0,1.0,True
+federated_blockchain,fl_bc_2_malicious,0.8812,0.4159,0.8573,0.5601,0.956,3.0,2.0,True

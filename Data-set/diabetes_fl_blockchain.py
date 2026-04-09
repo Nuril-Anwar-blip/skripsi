@@ -1,524 +1,596 @@
-import os, hashlib, json, time, warnings
+import hashlib
+import json
+import os
+import time
+import warnings
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
-import seaborn as sns
-warnings.filterwarnings('ignore')
+from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score, roc_auc_score
+from sklearn.model_selection import train_test_split
+from sklearn.preprocessing import LabelEncoder, StandardScaler
+from sklearn.utils import resample
 
-from sklearn.preprocessing   import LabelEncoder, StandardScaler
-from sklearn.model_selection  import train_test_split
-from sklearn.utils            import resample
-from sklearn.linear_model     import LogisticRegression
-from sklearn.ensemble         import RandomForestClassifier, GradientBoostingClassifier
-from sklearn.neighbors        import KNeighborsClassifier
-from sklearn.metrics          import (
-    accuracy_score, f1_score, precision_score,
-    recall_score, roc_auc_score, classification_report,
-    confusion_matrix, ConfusionMatrixDisplay
-)
+warnings.filterwarnings("ignore")
 
-# ===========================================================================
-# KONFIGURASI
-# ===========================================================================
-DATA_PATH    = 'diabetes_prediction_dataset.csv'
+
+DATA_PATH = "diabetes_prediction_dataset.csv"
 RANDOM_STATE = 42
-TEST_SIZE    = 0.10
-N_KLIEN      = 5
-N_RONDE      = 20
-os.makedirs('output', exist_ok=True)
-
-# ===========================================================================
-# BAGIAN 1 — PREPROCESSING
-# ===========================================================================
-print("\n" + "="*55)
-print("BAGIAN 1 : PREPROCESSING")
-print("="*55)
-
-df = pd.read_csv(DATA_PATH)
-print(f"Data awal     : {df.shape}")
-print(f"Missing value : {df.isnull().sum().sum()}")
-print(f"Label diabetes:\n{df['diabetes'].value_counts()}")
-
-# Hapus duplikat
-df.drop_duplicates(inplace=True)
-
-# Hapus outlier IQR (per kelas)
-NUM = ['age', 'bmi', 'HbA1c_level', 'blood_glucose_level']
-
-def iqr_filter(data, cols):
-    Q1, Q3 = data[cols].quantile(0.25), data[cols].quantile(0.75)
-    IQR    = Q3 - Q1
-    mask   = ~((data[cols] < Q1 - 1.5*IQR) | (data[cols] > Q3 + 1.5*IQR)).any(axis=1)
-    return data[mask]
-
-df = pd.concat([
-    iqr_filter(df[df['diabetes']==1].copy(), NUM),
-    iqr_filter(df[df['diabetes']==0].copy(), NUM)
-]).reset_index(drop=True)
-print(f"Setelah IQR   : {df.shape}")
-
-# Label Encoding
-le = LabelEncoder()
-for col in ['gender', 'smoking_history']:
-    df[col] = le.fit_transform(df[col].astype(str))
-
-# Fitur & target
-FITUR = ['age','hypertension','heart_disease','bmi',
-         'HbA1c_level','blood_glucose_level','gender','smoking_history']
-X, y  = df[FITUR].values, df['diabetes'].values
-
-# Split
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE, stratify=y
-)
-
-# Oversampling (imbalanced)
-idx0    = np.where(y_train==0)[0]
-idx1    = np.where(y_train==1)[0]
-idx1_up = resample(idx1, replace=True, n_samples=len(idx0), random_state=RANDOM_STATE)
-idx_bal = np.random.permutation(np.concatenate([idx0, idx1_up]))
-X_train, y_train = X_train[idx_bal], y_train[idx_bal]
-print(f"Setelah oversample — Train: {X_train.shape} | Label: {np.bincount(y_train)}")
-
-# Standarisasi
-scaler  = StandardScaler()
-X_train = scaler.fit_transform(X_train)
-X_test  = scaler.transform(X_test)
-
-# Simpan untuk FL
-np.save('output/X_train.npy', X_train)
-np.save('output/X_test.npy',  X_test)
-np.save('output/y_train.npy', y_train)
-np.save('output/y_test.npy',  y_test)
-print("Data tersimpan di output/")
-
-# ===========================================================================
-# BAGIAN 2 — CENTRALIZED ML (BASELINE)
-# ===========================================================================
-print("\n" + "="*55)
-print("BAGIAN 2 : CENTRALIZED ML (BASELINE)")
-print("="*55)
-
-MODELS = {
-    'Logistic Regression' : LogisticRegression(max_iter=1000, random_state=RANDOM_STATE),
-    'Random Forest'       : RandomForestClassifier(n_estimators=100, max_depth=16,
-                                                    random_state=RANDOM_STATE, n_jobs=-1),
-    'KNN'                 : KNeighborsClassifier(n_neighbors=10),
-    'Gradient Boosting'   : GradientBoostingClassifier(n_estimators=100,
-                                                        random_state=RANDOM_STATE),
+TEST_SIZE = 0.1
+N_CLIENTS = 5
+N_ROUNDS = 8
+OUTPUT_DIR = "output"
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+OUTPUT_SUBDIRS = {
+    "eda": os.path.join(OUTPUT_DIR, "0_eda_visualizations"),
+    "baseline": os.path.join(OUTPUT_DIR, "1_baseline"),
+    "history": os.path.join(OUTPUT_DIR, "2_federated_history"),
+    "security": os.path.join(OUTPUT_DIR, "3_security_logs"),
+    "ledger": os.path.join(OUTPUT_DIR, "4_blockchain_ledger"),
+    "summary": os.path.join(OUTPUT_DIR, "5_summary"),
+    "visual": os.path.join(OUTPUT_DIR, "6_visualizations"),
 }
+for subdir in OUTPUT_SUBDIRS.values():
+    os.makedirs(subdir, exist_ok=True)
 
-hasil_central = {}
-for nama, model in MODELS.items():
-    model.fit(X_train, y_train)
-    yp   = model.predict(X_test)
-    yprob= model.predict_proba(X_test)[:,1]
-    hasil_central[nama] = {
-        'Accuracy' : round(accuracy_score(y_test, yp), 4),
-        'Precision': round(precision_score(y_test, yp, zero_division=0), 4),
-        'Recall'   : round(recall_score(y_test, yp, zero_division=0), 4),
-        'F1-Score' : round(f1_score(y_test, yp, zero_division=0), 4),
-        'AUC-ROC'  : round(roc_auc_score(y_test, yprob), 4),
+
+def metrics(y_true, y_pred, y_prob):
+    return {
+        "accuracy": round(accuracy_score(y_true, y_pred), 4),
+        "precision": round(precision_score(y_true, y_pred, zero_division=0), 4),
+        "recall": round(recall_score(y_true, y_pred, zero_division=0), 4),
+        "f1": round(f1_score(y_true, y_pred, zero_division=0), 4),
+        "auc": round(roc_auc_score(y_true, y_prob), 4),
     }
-    print(f"\n{nama}")
-    print(classification_report(y_test, yp, target_names=['Non-DM','DM']))
 
-    # Confusion matrix
-    ConfusionMatrixDisplay(confusion_matrix(y_test, yp),
-                           display_labels=['Non-DM','DM']).plot(cmap='Blues')
-    plt.title(f'Confusion Matrix — {nama}')
+
+def generate_eda_visuals(df_raw):
+    num_cols = ["age", "bmi", "HbA1c_level", "blood_glucose_level"]
+    cat_cols = ["gender", "smoking_history"]
+
+    # Missing values per kolom
+    plt.figure(figsize=(10, 4))
+    miss = df_raw.isnull().sum()
+    plt.bar(miss.index, miss.values)
+    plt.xticks(rotation=20)
+    plt.title("Missing Values per Kolom")
+    plt.ylabel("Jumlah")
+    plt.grid(axis="y", alpha=0.3)
     plt.tight_layout()
-    plt.savefig(f'output/cm_{nama.replace(" ","_")}.png', dpi=150)
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["eda"], "01_missing_values.png"), dpi=180)
     plt.close()
 
-df_central = pd.DataFrame(hasil_central).T
-print("\nRingkasan Centralized:")
-print(df_central)
-df_central.to_csv('output/hasil_centralized.csv')
+    # Distribusi target
+    plt.figure(figsize=(6, 4))
+    target_count = df_raw["diabetes"].value_counts().sort_index()
+    plt.bar(["Non-Diabetes (0)", "Diabetes (1)"], target_count.values, color=["#3B82F6", "#EF4444"])
+    plt.title("Distribusi Label Diabetes")
+    plt.ylabel("Jumlah Sampel")
+    plt.grid(axis="y", alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["eda"], "02_distribusi_target.png"), dpi=180)
+    plt.close()
 
-# ===========================================================================
-# BAGIAN 3 — FEDERATED LEARNING
-# ===========================================================================
-print("\n" + "="*55)
-print("BAGIAN 3 : FEDERATED LEARNING (FedAvg)")
-print("="*55)
+    # Statistik numerik (boxplot)
+    fig, axes = plt.subplots(2, 2, figsize=(11, 7))
+    axes = axes.flatten()
+    for i, c in enumerate(num_cols):
+        axes[i].boxplot(df_raw[c].dropna())
+        axes[i].set_title(f"Boxplot {c}")
+        axes[i].grid(alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["eda"], "03_boxplot_numerik.png"), dpi=180)
+    plt.close()
 
-class FLClient:
-    def __init__(self, cid, X, y):
-        self.cid      = cid
-        self.X        = X
-        self.y        = y
-        self.n        = len(y)
-        self.model    = LogisticRegression(max_iter=300, warm_start=True,
-                                            random_state=RANDOM_STATE)
-        # inisialisasi awal (pastikan 2 kelas)
-        xi = np.vstack([X[:3], X[:3]])
-        yi = np.array([0,0,0,1,1,1])
-        self.model.fit(xi, yi)
+    # Histogram numerik
+    fig, axes = plt.subplots(2, 2, figsize=(11, 7))
+    axes = axes.flatten()
+    for i, c in enumerate(num_cols):
+        axes[i].hist(df_raw[c].dropna(), bins=30, alpha=0.85)
+        axes[i].set_title(f"Histogram {c}")
+        axes[i].grid(alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["eda"], "04_histogram_numerik.png"), dpi=180)
+    plt.close()
 
-    def get_params(self):
-        return {'coef': self.model.coef_.copy(),
-                'intercept': self.model.intercept_.copy()}
+    # Distribusi kategori
+    fig, axes = plt.subplots(1, 2, figsize=(11, 4))
+    for i, c in enumerate(cat_cols):
+        vc = df_raw[c].astype(str).value_counts().head(8)
+        axes[i].bar(vc.index, vc.values)
+        axes[i].set_title(f"Distribusi {c}")
+        axes[i].tick_params(axis="x", rotation=25)
+        axes[i].grid(axis="y", alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["eda"], "05_distribusi_kategorikal.png"), dpi=180)
+    plt.close()
 
-    def set_params(self, p):
-        self.model.coef_      = p['coef'].copy()
-        self.model.intercept_ = p['intercept'].copy()
-
-    def latih(self, global_params):
-        self.set_params(global_params)
-        self.model.fit(self.X, self.y)
-        acc = accuracy_score(self.y, self.model.predict(self.X))
-        print(f"  [Klien {self.cid}] n={self.n} | local_acc={acc:.4f}")
-        return {'params': self.get_params(), 'n': self.n}
-
-
-class FLServer:
-    def __init__(self, n_fitur):
-        self.params = {'coef': np.zeros((1, n_fitur)),
-                       'intercept': np.zeros(1)}
-
-    def fedavg(self, updates):
-        total = sum(u['n'] for u in updates)
-        coef  = np.zeros_like(self.params['coef'])
-        inter = np.zeros_like(self.params['intercept'])
-        for u in updates:
-            w      = u['n'] / total
-            coef  += w * u['params']['coef']
-            inter += w * u['params']['intercept']
-        self.params = {'coef': coef, 'intercept': inter}
-
-    def evaluasi(self, X, y):
-        m             = LogisticRegression(max_iter=1)
-        m.classes_    = np.array([0,1])
-        m.coef_       = self.params['coef']
-        m.intercept_  = self.params['intercept']
-        yp   = m.predict(X)
-        yprob= m.predict_proba(X)[:,1]
-        return {
-            'Accuracy' : round(accuracy_score(y, yp), 4),
-            'Precision': round(precision_score(y, yp, zero_division=0), 4),
-            'Recall'   : round(recall_score(y, yp, zero_division=0), 4),
-            'F1-Score' : round(f1_score(y, yp, zero_division=0), 4),
-            'AUC-ROC'  : round(roc_auc_score(y, yprob), 4),
-        }
+    # Korelasi numerik
+    corr_cols = num_cols + ["hypertension", "heart_disease", "diabetes"]
+    corr = df_raw[corr_cols].corr()
+    plt.figure(figsize=(8, 6))
+    im = plt.imshow(corr.values, cmap="coolwarm", vmin=-1, vmax=1)
+    plt.colorbar(im, fraction=0.046, pad=0.04)
+    plt.xticks(range(len(corr.columns)), corr.columns, rotation=25)
+    plt.yticks(range(len(corr.index)), corr.index)
+    plt.title("Heatmap Korelasi Fitur Numerik")
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["eda"], "06_heatmap_korelasi.png"), dpi=180)
+    plt.close()
 
 
-def bagi_iid(X, y, n):
-    idx   = np.random.permutation(len(X))
-    parts = np.array_split(idx, n)
+def preprocess():
+    df = pd.read_csv(DATA_PATH).drop_duplicates().reset_index(drop=True)
+    for col in ["gender", "smoking_history"]:
+        df[col] = LabelEncoder().fit_transform(df[col].astype(str))
+
+    features = [
+        "age",
+        "hypertension",
+        "heart_disease",
+        "bmi",
+        "HbA1c_level",
+        "blood_glucose_level",
+        "gender",
+        "smoking_history",
+    ]
+    X = df[features].values
+    y = df["diabetes"].values
+
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=TEST_SIZE, random_state=RANDOM_STATE, stratify=y
+    )
+
+    idx0 = np.where(y_train == 0)[0]
+    idx1 = np.where(y_train == 1)[0]
+    idx1_up = resample(idx1, replace=True, n_samples=len(idx0), random_state=RANDOM_STATE)
+    idx_bal = np.random.RandomState(RANDOM_STATE).permutation(np.concatenate([idx0, idx1_up]))
+    X_train, y_train = X_train[idx_bal], y_train[idx_bal]
+
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
+    return X_train, X_test, y_train, y_test
+
+
+def run_centralized(X_train, X_test, y_train, y_test):
+    models = {
+        "logistic_regression": LogisticRegression(max_iter=800, random_state=RANDOM_STATE),
+        "random_forest": RandomForestClassifier(
+            n_estimators=100, max_depth=16, random_state=RANDOM_STATE, n_jobs=-1
+        ),
+    }
+    rows = []
+    fitted_models = {}
+    for name, model in models.items():
+        model.fit(X_train, y_train)
+        fitted_models[name] = model
+        y_pred = model.predict(X_test)
+        y_prob = model.predict_proba(X_test)[:, 1]
+        rows.append({"approach": "centralized", "scenario": name, **metrics(y_test, y_pred, y_prob)})
+    return pd.DataFrame(rows), fitted_models
+
+
+def split_iid(X, y, n_clients):
+    idx = np.random.RandomState(RANDOM_STATE).permutation(len(X))
+    parts = np.array_split(idx, n_clients)
     return [(X[p], y[p]) for p in parts]
 
 
-def bagi_noniid(X, y, n, alpha=0.5):
-    klien = [[] for _ in range(n)]
-    for kls in np.unique(y):
-        idx = np.where(y==kls)[0]; np.random.shuffle(idx)
-        prop = np.random.dirichlet([alpha]*n)
-        batas = (np.cumsum(prop)*len(idx)).astype(int)
-        batas = np.concatenate([[0], batas])
-        for k in range(n):
-            klien[k].extend(idx[batas[k]:batas[k+1]].tolist())
-    return [(X[np.array(ids)], y[np.array(ids)]) for ids in klien]
-
-
-def jalankan_fl(X_tr, y_tr, X_te, y_te, n_klien, n_ronde, mode='iid'):
-    print(f"\n  Mode={mode} | Klien={n_klien} | Ronde={n_ronde}")
-    np.random.seed(RANDOM_STATE)
-    data  = bagi_iid(X_tr, y_tr, n_klien) if mode=='iid' \
-            else bagi_noniid(X_tr, y_tr, n_klien)
-    klien = [FLClient(i, *data[i]) for i in range(n_klien)]
-    srv   = FLServer(X_tr.shape[1])
-    hist  = []
-    for r in range(1, n_ronde+1):
-        print(f"\n  --- Ronde {r}/{n_ronde} ---")
-        updates = [k.latih(srv.params) for k in klien]
-        srv.fedavg(updates)
-        m = srv.evaluasi(X_te, y_te)
-        hist.append({'ronde': r, **m})
-        print(f"  [Server] Acc={m['Accuracy']:.4f} F1={m['F1-Score']:.4f} AUC={m['AUC-ROC']:.4f}")
-    return pd.DataFrame(hist)
-
-
-# Jalankan 3 skenario FL
-hist_iid5   = jalankan_fl(X_train, y_train, X_test, y_test, 5,  N_RONDE, 'iid')
-hist_noniid = jalankan_fl(X_train, y_train, X_test, y_test, 5,  N_RONDE, 'non_iid')
-hist_iid10  = jalankan_fl(X_train, y_train, X_test, y_test, 10, N_RONDE, 'iid')
-
-hist_iid5.to_csv('output/fl_iid5.csv',   index=False)
-hist_noniid.to_csv('output/fl_noniid.csv', index=False)
-hist_iid10.to_csv('output/fl_iid10.csv',  index=False)
-
-print("\nHasil akhir FL:")
-for nama, hist in [('IID 5K', hist_iid5),('NonIID 5K', hist_noniid),('IID 10K', hist_iid10)]:
-    r = hist.iloc[-1]
-    print(f"  {nama:12s} Acc={r['Accuracy']:.4f} F1={r['F1-Score']:.4f} AUC={r['AUC-ROC']:.4f}")
-
-# Plot konvergensi
-fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4))
-for df_h, lbl, ls in [(hist_iid5,'IID 5K','b-'), (hist_noniid,'Non-IID 5K','r--'),
-                       (hist_iid10,'IID 10K','g:')]:
-    a1.plot(df_h['ronde'], df_h['Accuracy'],  ls, label=lbl, lw=1.8)
-    a2.plot(df_h['ronde'], df_h['F1-Score'],  ls, label=lbl, lw=1.8)
-for ax, tl in [(a1,'Accuracy'),(a2,'F1-Score')]:
-    ax.set_title(f'Konvergensi FL — {tl}'); ax.set_xlabel('Ronde')
-    ax.legend(fontsize=9); ax.grid(alpha=0.3)
-plt.tight_layout()
-plt.savefig('output/fl_konvergensi.png', dpi=150)
-plt.close()
-print("Plot konvergensi tersimpan.")
-
-# ===========================================================================
-# BAGIAN 4 — BLOCKCHAIN SECURITY
-# ===========================================================================
-print("\n" + "="*55)
-print("BAGIAN 4 : BLOCKCHAIN + FL (Keamanan)")
-print("="*55)
-
-
-# ── Blockchain ───────────────────────────────────────────────────────────────
 class Block:
     def __init__(self, index, data, prev_hash):
-        self.index     = index
-        self.ts        = time.strftime('%Y-%m-%dT%H:%M:%S')
-        self.data      = data
+        self.index = index
+        self.timestamp = time.strftime("%Y-%m-%dT%H:%M:%S")
+        self.data = data
         self.prev_hash = prev_hash
-        self.hash      = self._hash()
+        self.hash = self._compute_hash()
 
-    def _hash(self):
-        konten = json.dumps({
-            'index': self.index, 'ts': self.ts,
-            'data' : {k:v for k,v in self.data.items()
-                      if k not in ('verified','hash_recv')},
-            'prev' : self.prev_hash
-        }, sort_keys=True)
-        return hashlib.sha256(konten.encode()).hexdigest()
+    def _compute_hash(self):
+        immutable_data = {
+            "client_id": self.data.get("client_id"),
+            "round": self.data.get("round"),
+            "model_hash": self.data.get("model_hash"),
+            "event": self.data.get("event"),
+        }
+        payload = json.dumps(
+            {
+                "index": self.index,
+                "timestamp": self.timestamp,
+                "data": immutable_data,
+                "prev_hash": self.prev_hash,
+            },
+            sort_keys=True,
+        )
+        return hashlib.sha256(payload.encode("utf-8")).hexdigest()
 
 
 class Blockchain:
     def __init__(self):
-        genesis = Block(0, {'info':'Genesis'}, '0'*64)
-        self.chain  = [genesis]
-        self._idx   = {}
+        self.chain = [Block(0, {"event": "genesis"}, "0" * 64)]
+        self.index = {}
 
-    def tambah(self, cid, ronde, mhash, n):
-        blok = Block(len(self.chain),
-                     {'cid':cid,'ronde':ronde,'mhash':mhash,'n':n,'verified':False},
-                     self.chain[-1].hash)
-        self.chain.append(blok)
-        self._idx[f'{cid}_{ronde}'] = {'mhash':mhash, 'bi':blok.index}
+    def record_commitment(self, client_id, round_no, model_hash):
+        data = {"client_id": client_id, "round": round_no, "model_hash": model_hash, "verified": False}
+        block = Block(len(self.chain), data, self.chain[-1].hash)
+        self.chain.append(block)
+        self.index[(client_id, round_no)] = block.index
 
-    def verifikasi(self, cid, ronde, recv_hash):
-        rec = self._idx.get(f'{cid}_{ronde}')
-        if not rec:
+    def verify(self, client_id, round_no, received_hash):
+        key = (client_id, round_no)
+        if key not in self.index:
             return False
-        ok = rec['mhash'] == recv_hash
-        self.chain[rec['bi']].data.update({'verified':ok,'hash_recv':recv_hash})
+        block = self.chain[self.index[key]]
+        ok = block.data["model_hash"] == received_hash
+        block.data["verified"] = ok
+        block.data["received_hash"] = received_hash
         return ok
 
-    def integritas(self):
+    def is_valid_chain(self):
         for i in range(1, len(self.chain)):
-            b, pb = self.chain[i], self.chain[i-1]
-            if b.hash != b._hash() or b.prev_hash != pb.hash:
+            if self.chain[i].prev_hash != self.chain[i - 1].hash:
+                return False
+            if self.chain[i].hash != self.chain[i]._compute_hash():
                 return False
         return True
 
-    def export(self, path):
-        with open(path,'w') as f:
-            json.dump([{'index':b.index,'ts':b.ts,'data':b.data,
-                        'prev':b.prev_hash,'hash':b.hash}
-                       for b in self.chain], f, indent=2)
 
-
-def hash_params(p):
+def hash_params(params):
     h = hashlib.sha256()
-    h.update(p['coef'].astype(np.float32).tobytes())
-    h.update(p['intercept'].astype(np.float32).tobytes())
+    h.update(params["coef"].astype(np.float32).tobytes())
+    h.update(params["intercept"].astype(np.float32).tobytes())
     return h.hexdigest()
 
 
-# ── Klien & server aman ───────────────────────────────────────────────────────
-class FLClientSecure:
-    def __init__(self, cid, X, y, ledger, jahat=False):
-        self.cid    = cid
-        self.X      = X
-        self.y      = y
-        self.n      = len(y)
-        self.ledger = ledger
-        self.jahat  = jahat
-        self.model  = LogisticRegression(max_iter=300, warm_start=True,
-                                          random_state=RANDOM_STATE)
-        xi = np.vstack([X[:3],X[:3]]); yi = np.array([0,0,0,1,1,1])
-        self.model.fit(xi, yi)
+class FLClient:
+    def __init__(self, client_id, X_local, y_local, malicious=False):
+        self.client_id = client_id
+        self.X_local = X_local
+        self.y_local = y_local
+        self.n = len(y_local)
+        self.malicious = malicious
+        self.model = LogisticRegression(max_iter=300, random_state=RANDOM_STATE, warm_start=True)
+        seed_x = np.vstack([X_local[:2], X_local[:2]])
+        seed_y = np.array([0, 0, 1, 1])
+        self.model.fit(seed_x, seed_y)
+
+    def set_params(self, params):
+        self.model.coef_ = params["coef"].copy()
+        self.model.intercept_ = params["intercept"].copy()
 
     def get_params(self):
-        return {'coef':self.model.coef_.copy(),'intercept':self.model.intercept_.copy()}
+        return {"coef": self.model.coef_.copy(), "intercept": self.model.intercept_.copy()}
 
-    def set_params(self, p):
-        self.model.coef_=p['coef'].copy(); self.model.intercept_=p['intercept'].copy()
-
-    def latih_kirim(self, global_params, ronde):
+    def train_and_send(self, global_params, blockchain, round_no):
         self.set_params(global_params)
-        self.model.fit(self.X, self.y)
-        params_asli = self.get_params()
-        mhash       = hash_params(params_asli)
+        self.model.fit(self.X_local, self.y_local)
+        honest_params = self.get_params()
+        honest_hash = hash_params(honest_params)
+        blockchain.record_commitment(self.client_id, round_no, honest_hash)
 
-        # Catat hash ke blockchain SEBELUM (mungkin) dimanipulasi
-        self.ledger.tambah(self.cid, ronde, mhash, self.n)
-
-        if self.jahat:
-            # Manipulasi bobot setelah hash dicatat → server akan menolak
-            params_kirim = {'coef': params_asli['coef']*-5,
-                            'intercept': params_asli['intercept']+99}
-            print(f"  [ATTACK] Klien {self.cid} mengirim bobot MANIPULASI!")
+        if self.malicious:
+            tampered = {
+                "coef": honest_params["coef"] * -4.0,
+                "intercept": honest_params["intercept"] + 15.0,
+            }
+            sent_params = tampered
         else:
-            params_kirim = params_asli
-
-        return {'cid':self.cid, 'params':params_kirim,
-                'hash':hash_params(params_kirim), 'n':self.n}
+            sent_params = honest_params
+        return {"client_id": self.client_id, "n": self.n, "params": sent_params, "sent_hash": hash_params(sent_params)}
 
 
-class FLServerSecure:
-    def __init__(self, n_fitur, ledger):
-        self.params = {'coef':np.zeros((1,n_fitur)),'intercept':np.zeros(1)}
-        self.ledger = ledger
-        self.log    = []
+class FLServer:
+    def __init__(self, n_features):
+        self.params = {"coef": np.zeros((1, n_features)), "intercept": np.zeros(1)}
 
-    def agregasi(self, updates, ronde):
-        valid, ditolak = [], 0
-        for u in updates:
-            if self.ledger.verifikasi(u['cid'], ronde, u['hash']):
-                valid.append(u)
-                print(f"  [Server] Klien {u['cid']}: VALID — diterima")
-            else:
-                ditolak += 1
-                print(f"  [Server] Klien {u['cid']}: INVALID — DITOLAK (poisoning!)")
-        self.log.append({'ronde':ronde,'diterima':len(valid),'ditolak':ditolak})
-        if not valid:
+    def aggregate_weighted(self, valid_updates):
+        total = sum(u["n"] for u in valid_updates)
+        coef = np.zeros_like(self.params["coef"])
+        intercept = np.zeros_like(self.params["intercept"])
+        for u in valid_updates:
+            w = u["n"] / total
+            coef += w * u["params"]["coef"]
+            intercept += w * u["params"]["intercept"]
+        self.params = {"coef": coef, "intercept": intercept}
+
+    def aggregate_robust(self, valid_updates, trim_ratio=0.2):
+        coefs = np.array([u["params"]["coef"].reshape(-1) for u in valid_updates])
+        inters = np.array([u["params"]["intercept"].reshape(-1) for u in valid_updates])
+        n = len(coefs)
+        k = int(n * trim_ratio)
+        if n <= 2 or k == 0:
+            self.aggregate_weighted(valid_updates)
             return
-        total = sum(u['n'] for u in valid)
-        coef  = np.zeros_like(self.params['coef'])
-        inter = np.zeros_like(self.params['intercept'])
-        for u in valid:
-            w=u['n']/total; coef+=w*u['params']['coef']; inter+=w*u['params']['intercept']
-        self.params = {'coef':coef,'intercept':inter}
-        print(f"  [FedAvg] {len(valid)} diterima | {ditolak} ditolak")
+        coef_sorted = np.sort(coefs, axis=0)
+        inter_sorted = np.sort(inters, axis=0)
+        coef_trimmed = coef_sorted[k : n - k]
+        inter_trimmed = inter_sorted[k : n - k]
+        self.params = {
+            "coef": np.mean(coef_trimmed, axis=0).reshape(1, -1),
+            "intercept": np.mean(inter_trimmed, axis=0),
+        }
 
-    def evaluasi(self, X, y):
-        m=LogisticRegression(max_iter=1); m.classes_=np.array([0,1])
-        m.coef_=self.params['coef']; m.intercept_=self.params['intercept']
-        yp=m.predict(X); yprob=m.predict_proba(X)[:,1]
-        return {'Accuracy':round(accuracy_score(y,yp),4),
-                'Precision':round(precision_score(y,yp,zero_division=0),4),
-                'Recall':round(recall_score(y,yp,zero_division=0),4),
-                'F1-Score':round(f1_score(y,yp,zero_division=0),4),
-                'AUC-ROC':round(roc_auc_score(y,yprob),4)}
-
-
-def jalankan_fl_bc(X_tr, y_tr, X_te, y_te, n_klien, n_ronde, n_jahat, label):
-    print(f"\n  Skenario: {label} | Klien jahat: {n_jahat}")
-    np.random.seed(RANDOM_STATE)
-    data   = bagi_iid(X_tr, y_tr, n_klien)
-    ledger = Blockchain()
-    klien  = [FLClientSecure(i, *data[i], ledger, jahat=(i<n_jahat))
-              for i in range(n_klien)]
-    srv    = FLServerSecure(X_tr.shape[1], ledger)
-    hist   = []
-    for r in range(1, n_ronde+1):
-        print(f"\n  --- Ronde {r}/{n_ronde} ---")
-        updates = [k.latih_kirim(srv.params, r) for k in klien]
-        srv.agregasi(updates, r)
-        m = srv.evaluasi(X_te, y_te)
-        hist.append({'ronde':r,**m})
-        print(f"  [Evaluasi] Acc={m['Accuracy']:.4f} F1={m['F1-Score']:.4f}")
-    print(f"\n  Integritas blockchain: {'UTUH' if ledger.integritas() else 'RUSAK'}")
-    print(f"  Total blok: {len(ledger.chain)}")
-    ledger.export(f"output/ledger_{label}.json")
-    pd.DataFrame(hist).to_csv(f"output/bc_{label}.csv", index=False)
-    pd.DataFrame(srv.log).to_csv(f"output/log_{label}.csv", index=False)
-    return pd.DataFrame(hist), pd.DataFrame(srv.log)
+    def evaluate(self, X_test, y_test):
+        model = LogisticRegression(max_iter=1)
+        model.classes_ = np.array([0, 1])
+        model.coef_ = self.params["coef"]
+        model.intercept_ = self.params["intercept"]
+        y_pred = model.predict(X_test)
+        y_prob = model.predict_proba(X_test)[:, 1]
+        return metrics(y_test, y_pred, y_prob)
 
 
-hist_bc_normal, log_normal = jalankan_fl_bc(
-    X_train, y_train, X_test, y_test, N_KLIEN, N_RONDE, 0, 'normal')
-hist_bc_1jahat, log_1jahat = jalankan_fl_bc(
-    X_train, y_train, X_test, y_test, N_KLIEN, N_RONDE, 1, '1_jahat')
-hist_bc_2jahat, log_2jahat = jalankan_fl_bc(
-    X_train, y_train, X_test, y_test, N_KLIEN, N_RONDE, 2, '2_jahat')
+def run_fl_blockchain(X_train, X_test, y_train, y_test, n_clients, n_rounds, n_malicious):
+    clients_data = split_iid(X_train, y_train, n_clients)
+    blockchain = Blockchain()
+    clients = [
+        FLClient(i, clients_data[i][0], clients_data[i][1], malicious=(i < n_malicious))
+        for i in range(n_clients)
+    ]
+    server = FLServer(X_train.shape[1])
+    history = []
+    security_log = []
 
-# ===========================================================================
-# BAGIAN 5 — PERBANDINGAN AKHIR
-# ===========================================================================
-print("\n" + "="*55)
-print("BAGIAN 5 : RINGKASAN PERBANDINGAN AKHIR")
-print("="*55)
+    for round_no in range(1, n_rounds + 1):
+        updates = [c.train_and_send(server.params, blockchain, round_no) for c in clients]
+        valid_updates = []
+        rejected = 0
+        for u in updates:
+            if blockchain.verify(u["client_id"], round_no, u["sent_hash"]):
+                valid_updates.append(u)
+            else:
+                rejected += 1
+        if valid_updates:
+            server.aggregate_robust(valid_updates, trim_ratio=0.2)
+        m = server.evaluate(X_test, y_test)
+        history.append({"round": round_no, **m, "accepted": len(valid_updates), "rejected": rejected})
+        security_log.append({"round": round_no, "accepted": len(valid_updates), "rejected": rejected})
 
-rows = []
-for nm, row in df_central.iterrows():
-    rows.append({'Pendekatan':'Centralized', 'Skenario':nm, **row})
-for nm, hist in [('FL IID 5K',hist_iid5),('FL Non-IID 5K',hist_noniid),('FL IID 10K',hist_iid10)]:
-    r = hist.iloc[-1]
-    rows.append({'Pendekatan':'FL', 'Skenario':nm,
-                 'Accuracy':r['Accuracy'],'Precision':r['Precision'],
-                 'Recall':r['Recall'],'F1-Score':r['F1-Score'],'AUC-ROC':r['AUC-ROC']})
-for nm, hist in [('Normal',hist_bc_normal),('1 Jahat',hist_bc_1jahat),('2 Jahat',hist_bc_2jahat)]:
-    r = hist.iloc[-1]
-    rows.append({'Pendekatan':'FL+Blockchain', 'Skenario':nm,
-                 'Accuracy':r['Accuracy'],'Precision':r['Precision'],
-                 'Recall':r['Recall'],'F1-Score':r['F1-Score'],'AUC-ROC':r['AUC-ROC']})
+    return pd.DataFrame(history), pd.DataFrame(security_log), blockchain
 
-df_final = pd.DataFrame(rows)
-pd.set_option('display.max_colwidth', 25)
-print(df_final.to_string(index=False))
-df_final.to_csv('output/HASIL_LENGKAP.csv', index=False)
 
-# Plot perbandingan akhir
-fig, axes = plt.subplots(1, 2, figsize=(14, 5))
-fig.suptitle('Perbandingan Akhir — Semua Pendekatan', fontsize=13)
-metrik = ['Accuracy','Precision','Recall','F1-Score','AUC-ROC']
-x      = np.arange(len(metrik))
+def main():
+    raw_df = pd.read_csv(DATA_PATH).drop_duplicates().reset_index(drop=True)
+    generate_eda_visuals(raw_df)
+    X_train, X_test, y_train, y_test = preprocess()
+    central_df, central_models = run_centralized(X_train, X_test, y_train, y_test)
+    central_df.to_csv(
+        os.path.join(OUTPUT_SUBDIRS["baseline"], "centralized_results.csv"),
+        index=False,
+    )
 
-for ax, pend, warna in [
-    (axes[0], ['Centralized','FL'], ['#2196F3','#7E57C2','#43A047','#FF5722','#26C6DA','#EC407A','#8BC34A']),
-    (axes[1], ['FL+Blockchain'],    ['#43A047','#E53935','#FF9800'])
-]:
-    sub  = df_final[df_final['Pendekatan'].isin(pend)]
-    w    = 0.8 / len(sub)
-    for i, (_, row) in enumerate(sub.iterrows()):
-        ax.bar(x + i*w, [row[m] for m in metrik], w,
-               label=f"{row['Pendekatan']} | {row['Skenario']}",
-               color=warna[i % len(warna)], alpha=0.85, edgecolor='white')
-    ax.set_xticks(x + w*(len(sub)-1)/2)
-    ax.set_xticklabels(metrik, fontsize=9)
-    ax.set_ylim(0.4, 1.05)
-    ax.legend(fontsize=7, loc='lower right')
-    ax.grid(axis='y', alpha=0.3)
+    all_rows = [central_df]
+    for scenario, bad in [("fl_bc_normal", 0), ("fl_bc_1_malicious", 1), ("fl_bc_2_malicious", 2)]:
+        hist, sec_log, chain = run_fl_blockchain(
+            X_train, X_test, y_train, y_test, N_CLIENTS, N_ROUNDS, bad
+        )
+        hist.to_csv(os.path.join(OUTPUT_SUBDIRS["history"], f"{scenario}_history.csv"), index=False)
+        sec_log.to_csv(os.path.join(OUTPUT_SUBDIRS["security"], f"{scenario}_security.csv"), index=False)
+        with open(
+            os.path.join(OUTPUT_SUBDIRS["ledger"], f"{scenario}_ledger.json"),
+            "w",
+            encoding="utf-8",
+        ) as f:
+            json.dump([b.__dict__ for b in chain.chain], f, indent=2)
+        final = hist.iloc[-1].to_dict()
+        all_rows.append(
+            pd.DataFrame(
+                [
+                    {
+                        "approach": "federated_blockchain",
+                        "scenario": scenario,
+                        "accuracy": final["accuracy"],
+                        "precision": final["precision"],
+                        "recall": final["recall"],
+                        "f1": final["f1"],
+                        "auc": final["auc"],
+                        "accepted_clients_last_round": int(final["accepted"]),
+                        "rejected_clients_last_round": int(final["rejected"]),
+                        "ledger_valid": chain.is_valid_chain(),
+                    }
+                ]
+            )
+        )
 
-plt.tight_layout()
-plt.savefig('output/perbandingan_akhir.png', dpi=150)
-plt.close()
+    summary = pd.concat(all_rows, ignore_index=True)
+    summary.to_csv(os.path.join(OUTPUT_SUBDIRS["summary"], "summary_results.csv"), index=False)
+    summary[summary["approach"] == "centralized"].to_csv(
+        os.path.join(OUTPUT_SUBDIRS["summary"], "summary_centralized.csv"),
+        index=False,
+    )
+    summary[summary["approach"] == "federated_blockchain"].to_csv(
+        os.path.join(OUTPUT_SUBDIRS["summary"], "summary_federated_blockchain.csv"),
+        index=False,
+    )
 
-# Plot deteksi serangan
-fig, (a1, a2) = plt.subplots(1, 2, figsize=(12, 4))
-fig.suptitle('Keamanan Blockchain — Deteksi Poisoning Attack', fontsize=12)
-for h, lbl, ls in [(hist_bc_normal,'Normal','g-'),
-                    (hist_bc_1jahat,'1 Klien Jahat','b--'),
-                    (hist_bc_2jahat,'2 Klien Jahat','r:')]:
-    a1.plot(h['ronde'], h['F1-Score'], ls, lw=2, label=lbl)
-a1.set_title('F1-Score per Ronde (dengan serangan)')
-a1.set_xlabel('Ronde'); a1.legend(fontsize=9); a1.grid(alpha=0.3)
+    # Visualisasi untuk perbandingan
+    fed_only = summary[summary["approach"] == "federated_blockchain"].copy()
+    cen_only = summary[summary["approach"] == "centralized"].copy()
+    metric_cols = ["accuracy", "precision", "recall", "f1", "auc"]
 
-a2.bar(log_1jahat['ronde'], log_1jahat['diterima'], color='steelblue', label='Diterima', alpha=0.8)
-a2.bar(log_1jahat['ronde'], log_1jahat['ditolak'],
-       bottom=log_1jahat['diterima'], color='crimson', label='Ditolak', alpha=0.8)
-a2.set_title('Klien Diterima/Ditolak per Ronde (1 Jahat)')
-a2.set_xlabel('Ronde'); a2.set_ylabel('Jumlah Klien')
-a2.legend(fontsize=9); a2.grid(axis='y', alpha=0.3)
+    # 1) Bar chart perbandingan semua skenario akhir
+    plt.figure(figsize=(11, 5))
+    chart_df = pd.concat([cen_only[["scenario"] + metric_cols], fed_only[["scenario"] + metric_cols]])
+    chart_df = chart_df.set_index("scenario")
+    chart_df.plot(kind="bar", ax=plt.gca(), width=0.85)
+    plt.title("Perbandingan Akhir Semua Pendekatan")
+    plt.ylabel("Score")
+    plt.ylim(0.35, 1.02)
+    plt.grid(axis="y", alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["visual"], "01_perbandingan_akhir_semua_pendekatan.png"), dpi=180)
+    plt.close()
 
-plt.tight_layout()
-plt.savefig('output/deteksi_serangan.png', dpi=150)
-plt.close()
+    # 2) Line chart tren F1 per ronde untuk tiap skenario FL+Blockchain
+    plt.figure(figsize=(10, 5))
+    for scenario in ["fl_bc_normal", "fl_bc_1_malicious", "fl_bc_2_malicious"]:
+        path_hist = os.path.join(OUTPUT_SUBDIRS["history"], f"{scenario}_history.csv")
+        hist_df = pd.read_csv(path_hist)
+        plt.plot(hist_df["round"], hist_df["f1"], marker="o", linewidth=1.8, label=scenario)
+    plt.title("Tren F1-Score per Ronde (FL + Blockchain)")
+    plt.xlabel("Round")
+    plt.ylabel("F1-Score")
+    plt.grid(alpha=0.3)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["visual"], "02_tren_f1_per_ronde.png"), dpi=180)
+    plt.close()
 
-print("\nSelesai! Semua output di folder 'output/'")
-print("\nFile yang dihasilkan:")
-for f in sorted(os.listdir('output')):
-    print(f"  output/{f}")
+    # 3) Line chart tren AUC per ronde
+    plt.figure(figsize=(10, 5))
+    for scenario in ["fl_bc_normal", "fl_bc_1_malicious", "fl_bc_2_malicious"]:
+        path_hist = os.path.join(OUTPUT_SUBDIRS["history"], f"{scenario}_history.csv")
+        hist_df = pd.read_csv(path_hist)
+        plt.plot(hist_df["round"], hist_df["auc"], marker="s", linewidth=1.8, label=scenario)
+    plt.title("Tren AUC per Ronde (FL + Blockchain)")
+    plt.xlabel("Round")
+    plt.ylabel("AUC")
+    plt.grid(alpha=0.3)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["visual"], "03_tren_auc_per_ronde.png"), dpi=180)
+    plt.close()
+
+    # 4) Stacked bar accepted vs rejected (keamanan)
+    plt.figure(figsize=(10, 5))
+    sec_df = pd.read_csv(os.path.join(OUTPUT_SUBDIRS["security"], "fl_bc_2_malicious_security.csv"))
+    plt.bar(sec_df["round"], sec_df["accepted"], label="accepted", alpha=0.85)
+    plt.bar(sec_df["round"], sec_df["rejected"], bottom=sec_df["accepted"], label="rejected", alpha=0.85)
+    plt.title("Accepted vs Rejected Client per Ronde (2 Malicious)")
+    plt.xlabel("Round")
+    plt.ylabel("Jumlah Client")
+    plt.legend()
+    plt.grid(axis="y", alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["visual"], "04_keamanan_accepted_vs_rejected.png"), dpi=180)
+    plt.close()
+
+    # 5) Plot khusus perbandingan centralized vs FL+blockchain (accuracy)
+    plt.figure(figsize=(9, 5))
+    acc_compare = pd.DataFrame(
+        [
+            {"group": "centralized_logreg", "accuracy": float(cen_only[cen_only["scenario"] == "logistic_regression"]["accuracy"].iloc[0])},
+            {"group": "centralized_rf", "accuracy": float(cen_only[cen_only["scenario"] == "random_forest"]["accuracy"].iloc[0])},
+            {"group": "fl_bc_normal", "accuracy": float(fed_only[fed_only["scenario"] == "fl_bc_normal"]["accuracy"].iloc[0])},
+            {"group": "fl_bc_1_malicious", "accuracy": float(fed_only[fed_only["scenario"] == "fl_bc_1_malicious"]["accuracy"].iloc[0])},
+            {"group": "fl_bc_2_malicious", "accuracy": float(fed_only[fed_only["scenario"] == "fl_bc_2_malicious"]["accuracy"].iloc[0])},
+        ]
+    )
+    plt.bar(acc_compare["group"], acc_compare["accuracy"], color=["#3B82F6", "#1D4ED8", "#10B981", "#F59E0B", "#EF4444"])
+    plt.title("Perbandingan Accuracy Tiap Pendekatan")
+    plt.ylabel("Accuracy")
+    plt.ylim(0.80, 0.95)
+    plt.xticks(rotation=15)
+    plt.grid(axis="y", alpha=0.3)
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["visual"], "05_perbandingan_accuracy.png"), dpi=180)
+    plt.close()
+
+    # 6) Heatmap metrik agar cepat dibaca per pendekatan
+    heatmap_df = summary[["scenario", "accuracy", "precision", "recall", "f1", "auc"]].copy()
+    heatmap_df = heatmap_df.set_index("scenario")
+    plt.figure(figsize=(9, 4.8))
+    im = plt.imshow(heatmap_df.values, aspect="auto", cmap="YlGnBu", vmin=0.35, vmax=1.0)
+    plt.colorbar(im, fraction=0.03, pad=0.04, label="Score")
+    plt.xticks(range(len(heatmap_df.columns)), heatmap_df.columns, rotation=15)
+    plt.yticks(range(len(heatmap_df.index)), heatmap_df.index)
+    plt.title("Heatmap Perbandingan Metrik")
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["visual"], "06_heatmap_perbandingan_metrik.png"), dpi=180)
+    plt.close()
+
+    # 7) Confusion matrix model terbaik centralized (Random Forest)
+    best_model = central_models["random_forest"]
+    y_pred_rf = best_model.predict(X_test)
+    cm = confusion_matrix(y_test, y_pred_rf, labels=[0, 1])
+    disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=["Non-Diabetes", "Diabetes"])
+    fig, ax = plt.subplots(figsize=(6, 5))
+    disp.plot(ax=ax, cmap="Blues", colorbar=False)
+    ax.set_title("Confusion Matrix - Centralized Random Forest")
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["visual"], "07_confusion_matrix_random_forest.png"), dpi=180)
+    plt.close()
+
+    # 8) Rekap keamanan antar skenario (accepted/rejected pada ronde akhir)
+    security_compare = pd.DataFrame(
+        [
+            {
+                "scenario": row["scenario"],
+                "accepted_last_round": row.get("accepted_clients_last_round", np.nan),
+                "rejected_last_round": row.get("rejected_clients_last_round", np.nan),
+            }
+            for _, row in fed_only.iterrows()
+        ]
+    )
+    plt.figure(figsize=(8, 5))
+    x = np.arange(len(security_compare))
+    w = 0.35
+    plt.bar(x - w / 2, security_compare["accepted_last_round"], width=w, label="accepted")
+    plt.bar(x + w / 2, security_compare["rejected_last_round"], width=w, label="rejected")
+    plt.xticks(x, security_compare["scenario"], rotation=10)
+    plt.title("Perbandingan Keamanan Antar Skenario (Ronde Akhir)")
+    plt.ylabel("Jumlah Client")
+    plt.grid(axis="y", alpha=0.3)
+    plt.legend()
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["visual"], "08_ringkasan_keamanan_antar_skenario.png"), dpi=180)
+    plt.close()
+
+    # 9) Feature importance random forest
+    importances = pd.DataFrame(
+        {
+            "feature": [
+                "age",
+                "hypertension",
+                "heart_disease",
+                "bmi",
+                "HbA1c_level",
+                "blood_glucose_level",
+                "gender",
+                "smoking_history",
+            ],
+            "importance": central_models["random_forest"].feature_importances_,
+        }
+    ).sort_values("importance", ascending=False)
+    plt.figure(figsize=(8, 5))
+    plt.barh(importances["feature"], importances["importance"])
+    plt.gca().invert_yaxis()
+    plt.title("Feature Importance - Random Forest")
+    plt.xlabel("Importance")
+    plt.tight_layout()
+    plt.savefig(os.path.join(OUTPUT_SUBDIRS["visual"], "09_feature_importance_random_forest.png"), dpi=180)
+    plt.close()
+
+    # Laporan informatif otomatis
+    report_path = os.path.join(OUTPUT_DIR, "LAPORAN_INFORMATIF_DATASET.md")
+    with open(report_path, "w", encoding="utf-8") as f:
+        f.write("# Laporan Informatif Data-set\n\n")
+        f.write("Dokumen ini dibuat otomatis dari pipeline `diabetes_fl_blockchain.py`.\n\n")
+        f.write("## Ringkasan Dataset\n")
+        f.write(f"- Jumlah baris: {len(raw_df)}\n")
+        f.write(f"- Jumlah kolom: {raw_df.shape[1]}\n")
+        f.write(f"- Missing values total: {int(raw_df.isnull().sum().sum())}\n")
+        f.write(f"- Distribusi label diabetes: {raw_df['diabetes'].value_counts().to_dict()}\n\n")
+        f.write("## Struktur Output\n")
+        for name, path in OUTPUT_SUBDIRS.items():
+            f.write(f"- `{name}`: `{path}`\n")
+        f.write("\n## Hasil Ringkas\n")
+        f.write("```text\n")
+        f.write(summary.to_string(index=False))
+        f.write("\n```\n")
+        f.write("\n\n## Daftar Visualisasi\n")
+        f.write("- EDA: `output/0_eda_visualizations`\n")
+        f.write("- Evaluasi model: `output/6_visualizations`\n")
+        f.write("- Untuk pembahasan skripsi, gunakan heatmap metrik, confusion matrix, dan keamanan accepted/rejected.\n")
+    print(summary.to_string(index=False))
+    print(f"\nOutput tersimpan di: {OUTPUT_DIR}")
+    print("Struktur:")
+    for name, path in OUTPUT_SUBDIRS.items():
+        print(f"- {name}: {path}")
+
+
+if __name__ == "__main__":
+    main()
